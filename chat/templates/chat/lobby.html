@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+      <head>
+            <meta charset="utf-8">
+            <title>Lobby</title>
+      </head>
+      <body>
+            <h1>Sala de chat</h1>
+            <form id="form">
+                  <input type="text" name="message" value="">
+            </form>
+
+            <div id="messages"></div>
+            <script type="text/javascript">
+                  // var intervalo = 0
+                  function connect(){
+                        let url = `ws://${window.location.host}/ws/socket-server/`
+                        const chatSocket = new WebSocket(url)
+
+                        chatSocket.onopen = function(e) {
+                              console.log('Conexión establecida')
+                              // clearInterval(intervalo)
+                        }
+
+                        chatSocket.onmessage = function(e) {
+                              let data = JSON.parse(e.data)
+                              console.log('Data: ', data)
+
+                              if(data.type === 'chat') {
+                                    let messages = document.getElementById('messages')
+                                    messages.insertAdjacentHTML('beforeend',
+                                          `<div>
+                                          <p>${data.message}</p>
+                                          </div>`
+                                    )
+                              }
+                        }
+
+                        chatSocket.onclose = function(e) {
+                              // intervalo = setInterval(function(){
+                              setTimeout(function() {
+                                    // connect();
+                                    location.reload(true);
+                              }, 1000);
+                        }
+
+                        chatSocket.onerror = function(err) {
+                              console.error('Socket encountered error: ', err.message, 'Closing socket');
+                              chatSocket.close();
+                        };
+
+                        let form = document.getElementById('form')
+                        form.addEventListener('submit', (e)=>{
+                              e.preventDefault()
+                              let message = e.target.message.value
+                              chatSocket.send(JSON.stringify({
+                                    'message': message
+                              }))
+                              form.reset()
+                        })
+                  }
+                  connect();
+            </script>
+      </body>
+</html>
