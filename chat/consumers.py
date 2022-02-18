@@ -42,6 +42,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
         self.group_name = 'test'
         await self.channel_layer.group_add(self.group_name, self.channel_name)
         await self.accept()
+        content = {
+            'type': 'acknowledge',
+            'message': 'ACK'
+        }
+        await self.send(text_data = json.dumps(content))
 
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
